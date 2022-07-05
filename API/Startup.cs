@@ -59,7 +59,7 @@ namespace API
                 });
             });
             services.AddDbContext<StoreContext>(opt=>{
-                opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+                opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
             });
             services.AddCors();
             services.AddIdentityCore<User>(opt=>
@@ -74,7 +74,7 @@ namespace API
                     {
                         ValidateIssuer = false,
                         ValidateAudience = false,
-                        ValidateLifetime = true,
+                        ValidateLifetime = true,    
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWTSettings:TokenKey"]))
                     };
@@ -100,6 +100,10 @@ namespace API
             // app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             app.UseCors(opt=>{
                 opt.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins("http://localhost:3000");
             });
@@ -110,6 +114,7 @@ namespace API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToController("Index","Fallback");
             });
         }
     }

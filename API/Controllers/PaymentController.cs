@@ -58,19 +58,21 @@ namespace API.Controllers
     [HttpPost("webhook")]
     public async Task<ActionResult> StripeWebhook()
     {
-      var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
-      var stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"],_config["StripeSettings:WhSecret"]);
-    
-      var charge= (Charge)stripeEvent.Data.Object;
+            var stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"],
+                _config["StripeSettings:WhSecret"]);
 
-      var order = await _context.Orders.FirstOrDefaultAsync(x=>x.PaymentIntentId==charge.PaymentIntentId);
+            var charge = (Charge)stripeEvent.Data.Object;
 
-      if(charge.Status =="succeeded") order.OrderStatus = OrderStatus.PaymentReceived;
+            var order = await _context.Orders.FirstOrDefaultAsync(x => 
+                x.PaymentIntentId == charge.PaymentIntentId);
 
-      await _context.SaveChangesAsync();
+            if (charge.Status == "succeeded") order.OrderStatus = OrderStatus.PaymentReceived;
 
-      return new EmptyResult();
+            await _context.SaveChangesAsync();
+
+            return new EmptyResult();
     }
   }
 
