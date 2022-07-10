@@ -1,5 +1,6 @@
 import { ComponentType } from "react";
 import { Redirect, Route, RouteComponentProps, RouteProps } from "react-router";
+import { toast } from "react-toastify";
 import { useAppSelector } from "../store/configureStore";
 
 interface Props extends RouteProps {
@@ -7,7 +8,11 @@ interface Props extends RouteProps {
   roles?: string[];
 }
 
-export default function PrivateRoute({ component: Component, ...rest }: Props) {
+export default function PrivateRoute({
+  component: Component,
+  roles,
+  ...rest
+}: Props) {
   const { user } = useAppSelector((state) => state.account);
 
   return (
@@ -21,7 +26,10 @@ export default function PrivateRoute({ component: Component, ...rest }: Props) {
             />
           );
         }
-
+        if (roles && !roles?.some((r) => user.roles?.includes(r))) {
+          toast.error("Not authorised to access this area");
+          return <Redirect to={{ pathname: "/catalog" }} />;
+        }
         return <Component {...props} />;
       }}
     />
